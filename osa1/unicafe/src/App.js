@@ -1,4 +1,3 @@
-import { render } from '@testing-library/react'
 import React, { useState } from 'react'
 
 const Display = ({ counter, text }) => {
@@ -22,35 +21,44 @@ const App = () => {
   const [neutral, setNeutral] = useState(0)
   const [bad, setBad] = useState(0)
   const [allClicks, setAll] = useState([])
+  let [sum, setSum] = useState(0)
+  let [average, setAverage] = useState(0)
+
   
   const handleGoodClick = () => {
     setAll(allClicks.concat(1))
     setGood(good + 1)
-    handleAllClick()
+    handleAllClick();
+    handleAverage();
   }
 
   const handleNeutralClick = () => {
     setAll(allClicks.concat(0))
     setNeutral(neutral + 1)
-    handleAllClick()
+    handleAllClick();
+    handleAverage();
   }
 
   const handleBadClick = () => {
     setAll(allClicks.concat(-1))
     setBad(bad + 1)
-    handleAllClick()
-  }
-
-  const handleAllClick = () => {
-    const reducer = (accumulator, currentValue) => accumulator + currentValue;
-    const allClicksCounter = allClicks.reduce(reducer);
+    handleAllClick();
+    handleAverage();
   }
 
 
-  
 
+  let handleAllClick = () => {
+    setSum(sum = allClicks.length + 1)
+  }
 
+  const handleAverage = () => {
+    if (sum !== 0) {
+      setAverage(average = (allClicks.reduce((accumulator, currentValue) =>
+        accumulator + currentValue, 0))/ sum)
+    }
 
+  }
 
 
   return (
@@ -63,8 +71,8 @@ const App = () => {
       <Display text={'good'} counter={good}/>
       <Display text={'neutral'} counter={neutral}/>
       <Display text={'bad'} counter={bad}/>
-      <Display text={'all'} counter={allClicksCounter}/>
-      <Display text={'average'} counter={'0'}/>
+      <Display text={'all'} counter={sum}/>
+      <Display text={'average'} counter={average}/>
       <Display text={'positive'} counter={'0'}/>
     </div>
   )
