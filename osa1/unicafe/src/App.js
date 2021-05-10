@@ -13,53 +13,56 @@ const Button = (props) => {
 }
 
 
-
-
 const App = () => {
   // tallenna napit omaan tilaansa
   const [good, setGood] = useState(0)
   const [neutral, setNeutral] = useState(0)
   const [bad, setBad] = useState(0)
-  const [allClicks, setAll] = useState([])
-  let [sum, setSum] = useState(0)
-  let [average, setAverage] = useState(0)
+  const [allClicks, setAll] = useState(0)
+  const [average, setAverage] = useState(0)
+  const [averageB, setAverageB] = useState(0)
+  const [positive, setPositive] = useState(0)
 
   
   const handleGoodClick = () => {
-    setAll(allClicks.concat(1))
     setGood(good + 1)
     handleAllClick();
-    handleAverage();
+    handleAverage(1);
+    handlePositive();
   }
 
   const handleNeutralClick = () => {
-    setAll(allClicks.concat(0))
     setNeutral(neutral + 1)
     handleAllClick();
-    handleAverage();
+    handleAverage(0);
+    handlePositive();
   }
 
   const handleBadClick = () => {
-    setAll(allClicks.concat(-1))
     setBad(bad + 1)
     handleAllClick();
-    handleAverage();
+    handleAverage(-1);
+    handlePositive();
   }
 
-
-
-  let handleAllClick = () => {
-    setSum(sum = allClicks.length + 1)
+  const handleAllClick = () => {
+    setAll(allClicks + 1)
   }
 
-  const handleAverage = () => {
-    if (sum !== 0) {
-      setAverage(average = (allClicks.reduce((accumulator, currentValue) =>
-        accumulator + currentValue, 0))/ sum)
+  const handleAverage = (x) => {
+    console.log(allClicks)
+    if (allClicks !== 0) {
+      setAverageB(averageB + x)
+      console.log(x)
+      setAverage(x / allClicks)
     }
-
   }
 
+  const handlePositive = () => {
+    if (allClicks !== 0) {
+      setPositive((good * 100/ allClicks) + ' %')
+    }
+  }
 
   return (
     <div>
@@ -71,9 +74,9 @@ const App = () => {
       <Display text={'good'} counter={good}/>
       <Display text={'neutral'} counter={neutral}/>
       <Display text={'bad'} counter={bad}/>
-      <Display text={'all'} counter={sum}/>
+      <Display text={'all'} counter={allClicks}/>
       <Display text={'average'} counter={average}/>
-      <Display text={'positive'} counter={'0'}/>
+      <Display text={'positive'} counter={positive}/>
     </div>
   )
 }
