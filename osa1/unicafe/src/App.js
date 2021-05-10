@@ -13,24 +13,7 @@ const Button = (props) => {
 }
 
 const Handler = () => {
-  const handleAllClick = () => {
-    setAll(allClicks + 1)
-  }
 
-  const handleAverage = (x) => {
-    console.log(allClicks)
-    if (allClicks !== 0) {
-      setAverageB(averageB + x)
-      console.log(x)
-      setAverage(averageB / allClicks)
-    }
-  }
-
-  const handlePositive = () => {
-    if (allClicks !== 0) {
-      setPositive((good * 100/ allClicks) + ' %')
-    }
-  }
 }
 
 
@@ -66,6 +49,24 @@ const App = () => {
     handlePositive();
   }
 
+  const handleAllClick = () => {
+    setAll(allClicks + 1)
+  }
+
+  const handleAverage = (x) => {
+    console.log(allClicks)
+    if (allClicks !== 0) {
+      setAverageB(averageB + x)
+      console.log(x)
+      setAverage(averageB / allClicks)
+    }
+  }
+
+  const handlePositive = () => {
+    if (allClicks !== 0) {
+      setPositive((good * 100/ allClicks) + ' %')
+    }
+  }
 
   return (
     <div>
