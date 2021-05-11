@@ -1,20 +1,73 @@
 import React, { useState } from 'react'
 
-const Display = ({ counter, text }) => {
-  return (
-    <div>{text} {counter}</div>
+const Button = (props) => {
+  return(
+  <button onClick={props.handleClick}>{props.text}</button>
   )
 }
 
-const Button = (props) => {
+const StatisticsLine = (props) => {
+  if (props.text === 'good' || props.text === 'neutral' || props.text === 'bad') {
+    console.log(props.text)
+    return (
+      <tr>
+        <td>{props.text} </td>
+        <td>{props.value}</td>
+      </tr>
+    )
+  } else if (props.text === 'all') {
+    return (
+      <tr>
+      <td>{props.text}</td>
+      <td>{props.value.length}</td>
+    </tr>
+    )
+  } else if (props.text === 'average') {
+    let x = 0
+    if (props.value.length > 0) {
+        x = props.value.reduce((accumulator, currentValue) => accumulator + currentValue)/props.value.length
+      }
+    return (
+      <tr>
+      <td>{props.text}</td>
+      <td>{x}</td>
+    </tr>
+    )
+  } else if (props.value.length > 0) {
+    let y = props.good * 100 / props.all.length
+    return (
+      <tr>
+        <td>{props.text}</td> 
+        <td>{y} %</td>
+      </tr>
+    )
+  }
   return (
-  <button onClick={props.handleClick}>{props.text}</button>
-)
+    <tr></tr>
+  )
 }
 
-const Handler = () => {
-
+const Statistics = (props) => {
+  if (props.all.length !== 0) {
+    return (
+      <table>
+        <tbody>
+        <StatisticsLine text={'good'} value={props.good}/>
+        <StatisticsLine text={'neutral'} value={props.neutral}/>
+        <StatisticsLine text={'bad'} value={props.bad}/>
+        <StatisticsLine text={'all'} value={props.all}/> 
+        <StatisticsLine text={'average'} value={props.all} />
+        <StatisticsLine text={'positive'} value={props.all} good={props.good} all={props.all}/>
+        </tbody>
+      </table>
+    )
+  }
+  return (
+    <div>No feedback given</div>
+  )
 }
+
+
 
 
 const App = () => {
@@ -22,50 +75,21 @@ const App = () => {
   const [good, setGood] = useState(0)
   const [neutral, setNeutral] = useState(0)
   const [bad, setBad] = useState(0)
-  const [allClicks, setAll] = useState(0)
-  const [average, setAverage] = useState(0)
-  const [averageB, setAverageB] = useState(0)
-  const [positive, setPositive] = useState(0)
+  const [all, setAll] = useState([])
 
-  
   const handleGoodClick = () => {
-    setGood(good + 1)
-    handleAllClick();
-    handleAverage(1);
-    handlePositive();
+    setGood(good + 1) 
+    setAll(all.concat(1))
   }
 
   const handleNeutralClick = () => {
     setNeutral(neutral + 1)
-    handleAllClick();
-    handleAverage(0);
-    handlePositive();
+    setAll(all.concat(0))
   }
 
   const handleBadClick = () => {
     setBad(bad + 1)
-    handleAllClick();
-    handleAverage(-1);
-    handlePositive();
-  }
-
-  const handleAllClick = () => {
-    setAll(allClicks + 1)
-  }
-
-  const handleAverage = (x) => {
-    console.log(allClicks)
-    if (allClicks !== 0) {
-      setAverageB(averageB + x)
-      console.log(x)
-      setAverage(averageB / allClicks)
-    }
-  }
-
-  const handlePositive = () => {
-    if (allClicks !== 0) {
-      setPositive((good * 100/ allClicks) + ' %')
-    }
+    setAll(all.concat(-1))
   }
 
   return (
@@ -75,12 +99,7 @@ const App = () => {
       <Button handleClick={handleNeutralClick} text={'neutral'}/>
       <Button handleClick={handleBadClick} text={'bad'}/>
       <h2>statistics</h2>
-      <Display text={'good'} counter={good}/>
-      <Display text={'neutral'} counter={neutral}/>
-      <Display text={'bad'} counter={bad}/>
-      <Display text={'all'} counter={allClicks}/>
-      <Display text={'average'} counter={average}/>
-      <Display text={'positive'} counter={positive}/>
+      <Statistics good={good} neutral={neutral} bad={bad} all={all}/>
     </div>
   )
 }
