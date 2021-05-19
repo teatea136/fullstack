@@ -26,11 +26,16 @@ const App = () => {
    
   const [selected, setSelected] = useState(0)
   const votes = Array.apply(null, new Array(6)).map(Number.prototype.valueOf,0)
-  let [copy, setCopy] = useState(votes)
+  const [copy, setCopy] = {
+    list: [votes]
+  }
 
   const handleVoteClick = () => {
-    console.log(copy)
-    //setCopy(copy[selected] += 1);
+    setCopy(copy => {const list = list.map(x => x + 1)
+      return {list}
+    })
+    console.log(copy.list)
+    
   }
 
   const handleNextClick = () => {
@@ -42,7 +47,7 @@ const App = () => {
       <div>
         {anecdotes[selected]}
       </div>
-      <VoteCount votecount={copy[selected]}/>
+      <VoteCount votecount={votes[selected]}/>
       <div>
         <Button handleClick={handleVoteClick} text={'vote'}/>
         <Button handleClick={handleNextClick} text={'next anecdote'}/>
