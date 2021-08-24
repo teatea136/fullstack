@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import personService from './services/person' 
 
 const Person = (props) => {
   return(
   <div>
-    {props.person.name} {props.person.number}
+    {props.person.name} {props.person.number} 
+    <button onClick={props.handleDeleteClick}>delete</button>
   </div>
 )}
 
@@ -37,17 +39,20 @@ const AddPerson = (props) => {
 
 
 const App = () => {
-  const [ persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456' },
-    { name: 'Ada Lovelace', number: '39-44-5323523' },
-    { name: 'Dan Abramov', number: '12-43-234345' },
-    { name: 'Mary Poppendieck', number: '39-23-6423122' }
-  ]) 
+  const [ persons, setPersons] = useState([]) 
   const [ newName, setNewName ] = useState('')
   const [ newNumber, setNewNumber ] = useState('')
   const [ filter, setFilter ] = useState('')
   const [ showAll, setShowAll] = useState(true)
   const [ filteredPersons, setFilteredPersons ] = useState([])
+
+  useEffect(() => {
+    personService
+      .getAll()
+        .then(initialPersons => {
+        setPersons(initialPersons)
+      })
+  }, [])
 
   const handleAddName = (event) => {
     console.log(event.target.value)
@@ -71,9 +76,15 @@ const App = () => {
       name: newName,
       number: newNumber,
     }
-    setPersons(persons.concat(personObject))
-    setNewName('')
-    setNewNumber('')
+
+    personService
+    .create(personObject)
+    .then(returnedPerson => {
+      setPersons(persons.concat(returnedPerson))
+      setNewName('')
+      setNewNumber('')
+    })
+
   }
 
   const handleFilter = (event) => {
@@ -81,6 +92,18 @@ const App = () => {
     setShowAll(false)
     setFilteredPersons(persons.filter(item => item.name.toUpperCase().includes(event.target.value.toUpperCase()) || item.number.toUpperCase().includes(event.target.value.toUpperCase())))
     console.log(filteredPersons);
+  }
+
+  const handleDeleteClick = (event) => {
+    event.preventDefault()
+    console.log(event.target.value)
+    const person = persons.find(p => p.id === event.target.id)
+
+    window.confirm(`Delete ${person}`) ? 
+    personService
+      .deletion() 
+    : console.log('canceled') 
+      
   }
 
 
@@ -91,7 +114,8 @@ const App = () => {
       <h3>Add a new</h3>
       <AddPerson addPerson={addPerson} newName={newName} handleAddName={handleAddName} newNumber={newNumber} handleAddNumber={handleAddNumber}/>
       <h2>Numbers</h2>
-      {showAll ? persons.map(name => <Person person={name}/> ) : filteredPersons.map(name => <Person person={name}/> )}
+      {showAll ? persons.map(name => <Person person={name} handleDeleteClick={handleDeleteClick}/> ) : filteredPersons.map(name => <Person person={name} handleDeleteClick={handleDeleteClick}/> )}
+      
     </div>
   )
 }
