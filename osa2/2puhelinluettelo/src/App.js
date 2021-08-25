@@ -37,6 +37,18 @@ const AddPerson = (props) => {
 </form>
 )}
 
+const Notification = ({ message }, {type}) => {
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className={type}>
+      {message}
+    </div>
+  )
+}
+
 
 const App = () => {
   const [ persons, setPersons] = useState([]) 
@@ -45,6 +57,8 @@ const App = () => {
   const [ filter, setFilter ] = useState('')
   const [ showAll, setShowAll] = useState(true)
   const [ filteredPersons, setFilteredPersons ] = useState([])
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [confirmMessage, setConfirmMessage] = useState('something was done right')
 
   useEffect(() => {
     personService
@@ -57,11 +71,25 @@ const App = () => {
   const handleAddName = (event) => {
     console.log(event.target.value)
     setNewName(event.target.value)
+  }
+
+  const handleUpdateNumber = (id, name, newNumber) => {
+
     persons.forEach((item) => {
-      event.target.value === item.name ? window.alert(`${event.target.value} is already added to phonebook`) : (console.log('no same names'))
+      name === item.name ? window.confirm(`${name} is already added to phonebook, replace the old number with a new one?`) ? dothething : console.log('change canceled') : console.log('no update needed')
     })
   }
 
+  const dothething = (id, newNumber) => {
+    const person = persons.find(p => p.id === id)
+    const changedPerson = {...person, number: newNumber}
+
+    personService
+      .update(id, changedPerson) 
+      .then(returnedPerson => {
+      setPersons(persons.map(p => p.id !== id ? p : returnedPerson))}) 
+  } 
+        
   const handleAddNumber = (event) => {
     setNewNumber(event.target.value)
     persons.forEach((item) => {
@@ -77,10 +105,18 @@ const App = () => {
       number: newNumber,
     }
 
+    
+
     personService
     .create(personObject)
     .then(returnedPerson => {
       setPersons(persons.concat(returnedPerson))
+      setConfirmMessage(
+        `The information of ${returnedPerson.name} was added to the server`
+      )
+      setTimeout(() => {
+        setConfirmMessage(null)
+      }, 5000) 
       setNewName('')
       setNewNumber('')
     })
@@ -94,15 +130,29 @@ const App = () => {
     console.log(filteredPersons);
   }
 
-  const handleDeleteClick = (event) => {
-    event.preventDefault()
-    console.log(event.target.value)
-    const person = persons.find(p => p.id === event.target.id)
-
-    window.confirm(`Delete ${person}`) ? 
+  const handleDeleteClick = (id) => {
+    const person = persons.find(p => p.id === id)
+    console.log(person)
+    window.confirm(`Delete ${person.name}`) ? 
     personService
-      .deletion() 
-    : console.log('canceled') 
+      .deletion(id)
+      .then(returnedPerson => {
+        setConfirmMessage(
+          `The information of ${returnedPerson.name} was deleted from the server`
+        )
+        setTimeout(() => {
+          setConfirmMessage(null)
+        }, 5000) 
+      })
+      .catch(error => {
+        setErrorMessage(
+          `${person.name} was already removed from server`
+        )
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000) 
+      })
+    : console.log('delete canceled') 
       
   }
 
@@ -110,11 +160,12 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={confirmMessage} />
       <Filter filter={filter} handleFilter={handleFilter}/>
       <h3>Add a new</h3>
       <AddPerson addPerson={addPerson} newName={newName} handleAddName={handleAddName} newNumber={newNumber} handleAddNumber={handleAddNumber}/>
       <h2>Numbers</h2>
-      {showAll ? persons.map(name => <Person person={name} handleDeleteClick={handleDeleteClick}/> ) : filteredPersons.map(name => <Person person={name} handleDeleteClick={handleDeleteClick}/> )}
+      {showAll ? persons.map(name => <Person key={name.id} person={name} handleDeleteClick={() => handleDeleteClick(name.id)}/> ) : filteredPersons.map(name => <Person key={name.id} person={name} handleDeleteClick={() => handleDeleteClick(name.id)}/> )}
       
     </div>
   )
