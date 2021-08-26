@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import personService from './services/person' 
+import './index.css'
 
 const Person = (props) => {
   return(
@@ -37,14 +38,14 @@ const AddPerson = (props) => {
 </form>
 )}
 
-const Notification = ({ message }, {type}) => {
-  if (message === null) {
+const Notification = (props) => {
+  if (props.message === null) {
     return null
   }
 
   return (
-    <div className={type}>
-      {message}
+    <div className={props.type}>
+      {props.message}
     </div>
   )
 }
@@ -55,10 +56,10 @@ const App = () => {
   const [ newName, setNewName ] = useState('')
   const [ newNumber, setNewNumber ] = useState('')
   const [ filter, setFilter ] = useState('')
-  const [ showAll, setShowAll] = useState(true)
+  const [ showAll, setShowAll ] = useState(true)
   const [ filteredPersons, setFilteredPersons ] = useState([])
-  const [errorMessage, setErrorMessage] = useState(null)
-  const [confirmMessage, setConfirmMessage] = useState('something was done right')
+  const [ messageType, setMessageType ] = useState(null)
+  const [ message, setMessage ] = useState(null)
 
   useEffect(() => {
     personService
@@ -71,30 +72,36 @@ const App = () => {
   const handleAddName = (event) => {
     console.log(event.target.value)
     setNewName(event.target.value)
-  }
-
-  const handleUpdateNumber = (id, name, newNumber) => {
-
     persons.forEach((item) => {
-      name === item.name ? window.confirm(`${name} is already added to phonebook, replace the old number with a new one?`) ? dothething : console.log('change canceled') : console.log('no update needed')
+      event.target.value === item.name ? window.alert(`${event.target.value} is already added to phonebook`) : (console.log('no same numbers'))
     })
   }
-
-  const dothething = (id, newNumber) => {
-    const person = persons.find(p => p.id === id)
-    const changedPerson = {...person, number: newNumber}
-
-    personService
-      .update(id, changedPerson) 
-      .then(returnedPerson => {
-      setPersons(persons.map(p => p.id !== id ? p : returnedPerson))}) 
-  } 
-        
+    
   const handleAddNumber = (event) => {
     setNewNumber(event.target.value)
     persons.forEach((item) => {
       event.target.value === item.number ? window.alert(`${event.target.value} is already added to phonebook`) : (console.log('no same numbers'))
     })
+  }
+
+  const handleUpdateNumber = (id, updateNumber) => {
+    const person = persons.find(p => p.id === id)
+    const changedPerson = {...person, number: updateNumber}
+
+    personService
+      .update(id, changedPerson) 
+      .then(returnedPerson => {
+      setPersons(persons.map(p => p.id !== id ? p : returnedPerson))
+      setMessageType("confirm")
+      setMessage(
+        `The information of ${returnedPerson.name} was updated to the server`
+      )
+      
+      setTimeout(() => {
+        setMessage(null)
+        setMessageType(null)
+      }, 5000)
+      }) 
   }
 
   const addPerson = (event) => {
@@ -104,23 +111,33 @@ const App = () => {
       name: newName,
       number: newNumber,
     }
+    console.log(personObject);
 
-    
-
+    persons.some(e => e.name === newName) ?
+    persons.forEach((item) => {
+      newName === item.name ? 
+        window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`) ? 
+        handleUpdateNumber(item.id, newNumber)
+        : console.log("user didnt change number") 
+      : console.log("nope")
+    })
+    :
     personService
     .create(personObject)
-    .then(returnedPerson => {
-      setPersons(persons.concat(returnedPerson))
-      setConfirmMessage(
-        `The information of ${returnedPerson.name} was added to the server`
-      )
-      setTimeout(() => {
-        setConfirmMessage(null)
-      }, 5000) 
-      setNewName('')
-      setNewNumber('')
-    })
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+        setMessage(
+          `The information of ${returnedPerson.name} was added to the server`
+        )
+        setMessageType("confirm")
+        setTimeout(() => {
+          setMessage(null)
+          setMessageType(null)
+        }, 5000) 
+      })
 
+    setNewName('')
+    setNewNumber('')
   }
 
   const handleFilter = (event) => {
@@ -137,19 +154,23 @@ const App = () => {
     personService
       .deletion(id)
       .then(returnedPerson => {
-        setConfirmMessage(
-          `The information of ${returnedPerson.name} was deleted from the server`
+        setMessage(
+          `The information was deleted from the server`
         )
+        setMessageType("confirm")
         setTimeout(() => {
-          setConfirmMessage(null)
+          setMessage(null)
+          setMessageType(null)
         }, 5000) 
       })
       .catch(error => {
-        setErrorMessage(
+        setMessage(
           `${person.name} was already removed from server`
         )
+        setMessageType("error")
         setTimeout(() => {
-          setErrorMessage(null)
+          setMessage(null)
+          setMessageType(null)
         }, 5000) 
       })
     : console.log('delete canceled') 
@@ -160,7 +181,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={confirmMessage} />
+      <Notification message={message} type={messageType} />
       <Filter filter={filter} handleFilter={handleFilter}/>
       <h3>Add a new</h3>
       <AddPerson addPerson={addPerson} newName={newName} handleAddName={handleAddName} newNumber={newNumber} handleAddNumber={handleAddNumber}/>
