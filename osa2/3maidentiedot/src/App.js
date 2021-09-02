@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"
+import countryService from './services/country' 
 
 const Filter = (props) => {
   return (
@@ -10,33 +11,30 @@ const Filter = (props) => {
   )
 }
 
-const Content = (props) => {
-  const content = null
-  {props.countries.lenght} > 10 ?
-  content = <p>Too many matches, specify another filter</p>
-  :
-  {props.countries.lenght} <= 10 && {props.countries.lenght} > 1?
-  content = props.countries
-  :
-  {props.countries.lenght} === 1 ?
-  content =
-  <div>
-    <h1>{props.countries.name}</h1>
-    <p>capital {props.countries.capital}</p>
-    <p>population {props.countries.population}</p>
-    <h2>languages</h2>
-    <ul>
-      {props.countries.map(country => <li>{country.language}</li> )}
-    </ul>
-  </div>
-  :
-  console.log("no input")
+const CountryName = (props) => {
   return (
     <div>
-      {content}
+      {props.country.name}
     </div>
   )
 }
+
+const CountryInfo = (props) => {
+  
+  return (
+    <div>
+      <h1>{props.c.name}</h1>
+      <p>capital {props.c.capital}</p>
+      <p>population {props.c.population}</p>
+      <h2>languages</h2>
+      <ul>
+        {props.c.languages.map(language => <li>{language.name}</li>)}
+      </ul>
+      <img src={props.c.flag} alt="flagPhoto" width="10%" ></img>
+    </div>
+  )
+}
+
 
 
 const App = () => {
@@ -44,33 +42,59 @@ const App = () => {
    const [filter, setFilter] = useState('')
    const [filteredCountries, setFilteredCountries] = useState([])
 
-  useEffect(() => {
+   useEffect(() => {
     countryService
       .getAll()
         .then(initialCountries => {
         setCountries(initialCountries)
-        console.log(countries)
       })
   }, [])
 
   const handleFilter = (event) => {
     setFilter(event.target.value)
-
-    countryService
-    .getSome(filter)
-    .then(returnedCountries => {
-      setFilteredCountries(returnedCountries)
-    })
-      
-    
+    setFilteredCountries(countries.filter(item => item.name.toUpperCase().includes(event.target.value.toUpperCase())))
   }
 
+
+  const handleContent = () => {
+    if (filteredCountries.length > 10) {
+      return (
+        <div>
+          <p>Too many matches, specify another filter</p>
+        </div>
+      )
+    } else if (filteredCountries.length <= 10 && filteredCountries.length > 1) {
+      return (
+        <div>
+          {filteredCountries.map((name, index) => <CountryName key={index} country={name} />)}
+        </div>
+        )
+    } else if (filteredCountries.length === 1) {
+      return (
+        <div>
+          {filteredCountries.map((c, index) => <CountryInfo key={index} c={c} />)}
+        </div>
+        )
+    } else if (filteredCountries.length === '') {
+      return (
+        null
+      )
+    } else { 
+      return (
+        <div>
+        {console.log(filteredCountries.length)}
+      </div>
+      )
+    }
+  }
+  
   return(
     <div>
       <Filter filter={filter} handleFilter={handleFilter}/>
-      <Content countries={filteredCountries}/>
+      
+      {handleContent()}
     </div>
   )
 }
 
-export default App;
+export default App

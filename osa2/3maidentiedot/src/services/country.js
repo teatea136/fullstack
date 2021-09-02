@@ -1,15 +1,10 @@
 import axios from 'axios'
 
-const baseUrl = 'https://restcountries.eu/rest/v2'
+const baseUrl = 'http://localhost:3001/countries'
 
   const getAll = () => {
-    const request = axios.get(`${baseUrl}/all`)
+    const request = axios.get(baseUrl)
     return request.then(response => response.data)
-  }
-
-  const getSome = (name) => {
-    const request = axios.get(`${baseUrl}/${name}`)
-    return request.then(response => response.data) 
   }
   
   const create = newObject => {
@@ -27,4 +22,4 @@ const baseUrl = 'https://restcountries.eu/rest/v2'
     return request.then(response => response.data)
   }
   
-export default { getAll, getSome, create, update, deletion }
+export default { getAll, create, update, deletion }
