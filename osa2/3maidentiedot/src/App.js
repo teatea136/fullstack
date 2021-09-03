@@ -14,25 +14,26 @@ const Filter = (props) => {
 const CountryName = (props) => {
   return (
     <div>
-      {props.country.name}
+      {props.c.name}
+      <button onClick={props.handleKlik} value={props.c.name}>show</button>
     </div>
   )
 }
 
+
 const CountryInfo = (props) => {
-  
-  return (
-    <div>
-      <h1>{props.c.name}</h1>
-      <p>capital {props.c.capital}</p>
-      <p>population {props.c.population}</p>
-      <h2>languages</h2>
-      <ul>
-        {props.c.languages.map(language => <li>{language.name}</li>)}
-      </ul>
-      <img src={props.c.flag} alt="flagPhoto" width="10%" ></img>
-    </div>
-  )
+    return (
+      <div>
+        <h1>{props.c.name}</h1>
+        <p>capital {props.c.capital}</p>
+        <p>population {props.c.population}</p>
+        <h2>languages</h2>
+        <ul>
+          {props.c.languages.map(language => <li key={language.id}>{language.name}</li>)}
+        </ul>
+        <img src={props.c.flag} alt="flagPhoto" width="10%" ></img>
+      </div>
+    )
 }
 
 
@@ -41,6 +42,9 @@ const App = () => {
    const [countries, setCountries] = useState([])
    const [filter, setFilter] = useState('')
    const [filteredCountries, setFilteredCountries] = useState([])
+   const [klik, setKlik] = useState('off')
+   const [klikValue, setKlikValue] = useState('')
+  
 
    useEffect(() => {
     countryService
@@ -53,7 +57,15 @@ const App = () => {
   const handleFilter = (event) => {
     setFilter(event.target.value)
     setFilteredCountries(countries.filter(item => item.name.toUpperCase().includes(event.target.value.toUpperCase())))
+    setKlik('off')
   }
+
+  const handleKlik = (event) => {
+    setKlik('on')
+    setKlikValue(event.target.value)
+  }
+
+  
 
 
   const handleContent = () => {
@@ -63,21 +75,23 @@ const App = () => {
           <p>Too many matches, specify another filter</p>
         </div>
       )
-    } else if (filteredCountries.length <= 10 && filteredCountries.length > 1) {
+    } else if (filteredCountries.length <= 10 && filteredCountries.length > 1 && klik !=='on') {
       return (
         <div>
-          {filteredCountries.map((name, index) => <CountryName key={index} country={name} />)}
+          {filteredCountries.map((c) => <CountryName key={c.id} c={c} handleKlik={handleKlik} name={klikValue} />)}
         </div>
         )
     } else if (filteredCountries.length === 1) {
       return (
         <div>
-          {filteredCountries.map((c, index) => <CountryInfo key={index} c={c} />)}
+          {filteredCountries.map((c) => <CountryInfo key={c.id} c={c}/> )}
         </div>
         )
-    } else if (filteredCountries.length === '') {
+    } else if (klik === "on") {
       return (
-        null
+        <div>
+          {filteredCountries.map((c) => klikValue === c.name ? <CountryInfo key={c.id} c={c}/> : console.log(klikValue))}
+        </div>
       )
     } else { 
       return (
